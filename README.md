@@ -6,8 +6,6 @@ API REST construída com **FastAPI** e **SQLite** para gerenciar um diário pess
 
 ## Arquitetura
 
-![Diagrama de Arquitetura](../back-avancado-mvp-docs/arquitetura.html)
-
 ```
 ┌─────────────────┐        REST/JSON        ┌──────────────────────────┐
 │  Frontend React  │ ──────────────────────► │   Backend FastAPI (8000)  │
