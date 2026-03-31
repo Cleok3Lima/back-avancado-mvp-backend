@@ -18,6 +18,7 @@ env/
 # Database files
 *.db
 *.sqlite3
+data/
 
 # Distribution / packaging
 dist/
