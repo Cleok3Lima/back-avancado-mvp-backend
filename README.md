@@ -67,15 +67,30 @@ docker run -p 8000:8000 rickmorty-api
 
 ## Rotas disponíveis
 
-| Método   | Rota                  | Descrição                                              |
-|----------|-----------------------|--------------------------------------------------------|
-| `GET`    | `/`                   | Health check — verifica se a API está no ar            |
-| `GET`    | `/diario`             | Lista todas as entradas do diário (com paginação)      |
-| `POST`   | `/diario`             | Cria uma nova entrada no diário                        |
-| `PUT`    | `/diario/{id}`        | Atualiza nota e/ou avaliação de uma entrada            |
-| `DELETE` | `/diario/{id}`        | Remove uma entrada do diário                           |
-| `GET`    | `/episodios`          | Lista episódios paginados da API do Rick and Morty     |
-| `GET`    | `/episodios/{id}`     | Retorna detalhes do episódio + personagens completos   |
+### Autenticação
+
+| Método | Rota               | Autenticação | Descrição                                  |
+|--------|--------------------|--------------|--------------------------------------------|
+| `POST` | `/auth/register`   | Não          | Cadastra novo usuário                      |
+| `POST` | `/auth/login`      | Não          | Faz login e retorna token JWT              |
+| `GET`  | `/auth/me`         | Bearer JWT   | Retorna dados do usuário autenticado       |
+
+### Diário *(requer Bearer JWT)*
+
+| Método   | Rota              | Descrição                                         |
+|----------|-------------------|---------------------------------------------------|
+| `GET`    | `/diario`         | Lista entradas do diário do usuário autenticado   |
+| `POST`   | `/diario`         | Cria uma nova entrada no diário                   |
+| `PUT`    | `/diario/{id}`    | Atualiza nota e/ou avaliação de uma entrada       |
+| `DELETE` | `/diario/{id}`    | Remove uma entrada do diário                      |
+
+### Episódios *(públicos)*
+
+| Método | Rota              | Descrição                                            |
+|--------|-------------------|------------------------------------------------------|
+| `GET`  | `/`               | Health check — verifica se a API está no ar          |
+| `GET`  | `/episodios`      | Lista episódios paginados da API do Rick and Morty   |
+| `GET`  | `/episodios/{id}` | Retorna detalhes do episódio + personagens completos |
 
 ### Parâmetros de query em `GET /diario`
 
@@ -115,12 +130,15 @@ back-avancado-mvp-backend/
 ├── Dockerfile
 ├── requirements.txt
 ├── README.md
-├── main.py          # Ponto de entrada, configuração CORS e registro de routers
-├── database.py      # Engine SQLAlchemy, SessionLocal, Base, get_db
-├── models.py        # Modelo ORM DiarioEntry
-├── schemas.py       # Schemas Pydantic (Create, Update, Out)
+├── main.py           # Ponto de entrada, configuração CORS e registro de routers
+├── database.py       # Engine SQLAlchemy, SessionLocal, Base, get_db
+├── models.py         # Modelos ORM: DiarioEntry e User
+├── schemas.py        # Schemas Pydantic (diário + auth)
+├── security.py       # Hash de senha (bcrypt) e geração/validação de JWT
+├── dependencies.py   # Dependência get_current_user (valida Bearer token)
 └── routers/
     ├── __init__.py
-    ├── diario.py    # Rotas CRUD do diário
-    └── episodios.py # Rotas que consomem a API do Rick and Morty
+    ├── auth.py      # Rotas de cadastro, login e /me
+    ├── diario.py    # Rotas CRUD do diário (protegidas por JWT)
+    └── episodios.py # Rotas que consomem a API do Rick and Morty (públicas)
 ```
