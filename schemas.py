@@ -64,7 +64,3 @@ class TokenOut(BaseModel):
     token_type: str = "bearer"
 
 
-class LoginRequest(BaseModel):
-    """Schema de entrada para o endpoint de login (aceita JSON)."""
-    username: str
-    password: str
