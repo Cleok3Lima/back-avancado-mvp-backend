@@ -2,4 +2,6 @@ fastapi
 uvicorn[standard]
 sqlalchemy
 httpx
-pydantic
+pydantic[email]
+python-jose[cryptography]
+bcrypt

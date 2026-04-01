@@ -1,14 +1,15 @@
 # routers/diario.py
-# Rotas CRUD para o diário pessoal de episódios
+# Rotas CRUD para o diário pessoal de episódios — escopo por usuário autenticado
 
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import asc, desc
+from sqlalchemy import desc
 
 from database import get_db
-from models import DiarioEntry
+from models import DiarioEntry, User
 from schemas import DiarioEntryCreate, DiarioEntryUpdate, DiarioEntryOut
+from dependencies import get_current_user
 
 router = APIRouter(
     prefix="/diario",
@@ -23,24 +24,22 @@ def listar_entradas(
     avaliacao: Optional[int] = Query(None, ge=1, le=5, description="Filtrar por avaliação (1-5)"),
     order_by: Optional[str] = Query("created_at", description="Campo para ordenar: 'created_at' ou 'avaliacao'"),
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """
-    Retorna todas as entradas do diário com suporte a paginação, filtro por avaliação e ordenação.
+    Retorna as entradas do diário do usuário autenticado,
+    com suporte a paginação, filtro por avaliação e ordenação.
     """
-    query = db.query(DiarioEntry)
+    query = db.query(DiarioEntry).filter(DiarioEntry.user_id == current_user.id)
 
-    # Filtro opcional por avaliação
     if avaliacao is not None:
         query = query.filter(DiarioEntry.avaliacao == avaliacao)
 
-    # Ordenação
     if order_by == "avaliacao":
         query = query.order_by(desc(DiarioEntry.avaliacao))
     else:
-        # Padrão: mais recentes primeiro
         query = query.order_by(desc(DiarioEntry.created_at))
 
-    # Paginação: offset calcula quantos registros pular
     offset = (page - 1) * limit
     entradas = query.offset(offset).limit(limit).all()
 
@@ -48,11 +47,15 @@ def listar_entradas(
 
 
 @router.post("/", response_model=DiarioEntryOut, status_code=201, summary="Criar nova entrada no diário")
-def criar_entrada(entrada: DiarioEntryCreate, db: Session = Depends(get_db)):
+def criar_entrada(
+    entrada: DiarioEntryCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     """
-    Cria uma nova entrada no diário para um episódio específico.
+    Cria uma nova entrada no diário associada ao usuário autenticado.
     """
-    nova_entrada = DiarioEntry(**entrada.model_dump())
+    nova_entrada = DiarioEntry(**entrada.model_dump(), user_id=current_user.id)
     db.add(nova_entrada)
     db.commit()
     db.refresh(nova_entrada)
@@ -60,17 +63,24 @@ def criar_entrada(entrada: DiarioEntryCreate, db: Session = Depends(get_db)):
 
 
 @router.put("/{entry_id}", response_model=DiarioEntryOut, summary="Atualizar entrada do diário")
-def atualizar_entrada(entry_id: int, dados: DiarioEntryUpdate, db: Session = Depends(get_db)):
+def atualizar_entrada(
+    entry_id: int,
+    dados: DiarioEntryUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     """
-    Atualiza a nota e/ou avaliação de uma entrada existente no diário.
-    Apenas os campos fornecidos serão atualizados.
+    Atualiza a nota e/ou avaliação de uma entrada do diário do usuário autenticado.
+    Retorna 404 se a entrada não existir ou não pertencer ao usuário.
     """
-    entrada = db.query(DiarioEntry).filter(DiarioEntry.id == entry_id).first()
+    entrada = db.query(DiarioEntry).filter(
+        DiarioEntry.id == entry_id,
+        DiarioEntry.user_id == current_user.id,
+    ).first()
 
     if not entrada:
         raise HTTPException(status_code=404, detail="Entrada não encontrada")
 
-    # Atualiza apenas os campos que foram enviados (exclui os None)
     dados_atualizados = dados.model_dump(exclude_unset=True)
     for campo, valor in dados_atualizados.items():
         setattr(entrada, campo, valor)
@@ -81,17 +91,23 @@ def atualizar_entrada(entry_id: int, dados: DiarioEntryUpdate, db: Session = Dep
 
 
 @router.delete("/{entry_id}", status_code=204, summary="Deletar entrada do diário")
-def deletar_entrada(entry_id: int, db: Session = Depends(get_db)):
+def deletar_entrada(
+    entry_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     """
-    Remove permanentemente uma entrada do diário pelo seu ID.
+    Remove permanentemente uma entrada do diário do usuário autenticado.
+    Retorna 404 se a entrada não existir ou não pertencer ao usuário.
     """
-    entrada = db.query(DiarioEntry).filter(DiarioEntry.id == entry_id).first()
+    entrada = db.query(DiarioEntry).filter(
+        DiarioEntry.id == entry_id,
+        DiarioEntry.user_id == current_user.id,
+    ).first()
 
     if not entrada:
         raise HTTPException(status_code=404, detail="Entrada não encontrada")
 
     db.delete(entrada)
     db.commit()
-
-    # 204 No Content: sucesso sem corpo de resposta
     return None

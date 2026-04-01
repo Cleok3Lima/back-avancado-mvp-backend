@@ -2,7 +2,8 @@
 # Definição dos modelos ORM (mapeamento objeto-relacional com SQLAlchemy)
 
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
 from database import Base
 
 
@@ -35,3 +36,23 @@ class DiarioEntry(Base):
 
     # Data e hora da última atualização
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Referência ao usuário dono desta entrada (nullable para compatibilidade com dados existentes)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    user = relationship("User", back_populates="entries")
+
+
+class User(Base):
+    """
+    Modelo que representa um usuário cadastrado na aplicação.
+    """
+
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    username = Column(String, unique=True, nullable=False, index=True)
+    email = Column(String, unique=True, nullable=False, index=True)
+    hashed_password = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    entries = relationship("DiarioEntry", back_populates="user")

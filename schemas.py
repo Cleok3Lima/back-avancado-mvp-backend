@@ -3,7 +3,7 @@
 
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 
 
 class DiarioEntryCreate(BaseModel):
@@ -36,3 +36,35 @@ class DiarioEntryOut(BaseModel):
     class Config:
         # Permite que o Pydantic leia dados diretamente de objetos ORM do SQLAlchemy
         from_attributes = True
+
+
+# ─── Schemas de Autenticação ──────────────────────────────────────────────────
+
+class UserCreate(BaseModel):
+    """Schema para cadastro de novo usuário."""
+    username: str = Field(..., min_length=3, max_length=50, description="Nome de usuário único")
+    email: EmailStr = Field(..., description="E-mail único")
+    password: str = Field(..., min_length=6, description="Senha com no mínimo 6 caracteres")
+
+
+class UserOut(BaseModel):
+    """Schema de saída para dados do usuário (sem senha)."""
+    id: int
+    username: str
+    email: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class TokenOut(BaseModel):
+    """Schema de resposta do endpoint de login."""
+    access_token: str
+    token_type: str = "bearer"
+
+
+class LoginRequest(BaseModel):
+    """Schema de entrada para o endpoint de login (aceita JSON)."""
+    username: str
+    password: str

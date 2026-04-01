@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from database import engine, Base
-from routers import diario, episodios
+from routers import diario, episodios, auth
 
 # Cria todas as tabelas no banco de dados (se ainda não existirem)
 # Isso executa ao iniciar o servidor pela primeira vez
@@ -33,6 +33,7 @@ app.add_middleware(
 )
 
 # Registra os roteadores com seus respectivos prefixos
+app.include_router(auth.router)
 app.include_router(diario.router)
 app.include_router(episodios.router)
 
