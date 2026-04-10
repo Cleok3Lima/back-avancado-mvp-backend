@@ -13,16 +13,21 @@ router = APIRouter(
 )
 
 
-@router.get("/", summary="Listar episódios com paginação")
+@router.get("/", summary="Listar episódios com paginação e filtro por temporada")
 async def listar_episodios(
-    page: int = Query(1, ge=1, description="Número da página (a API do Rick and Morty tem ~3 episódios por página)")
+    page: int = Query(1, ge=1, description="Número da página"),
+    season: int = Query(None, ge=1, le=9, description="Filtrar por temporada (1–9)"),
 ):
     """
     Retorna uma lista paginada de episódios buscada diretamente da API do Rick and Morty.
-    Cada página contém 20 episódios.
+    Quando 'season' é fornecido, retorna todos os episódios daquela temporada (sem paginação).
     """
+    params = {"page": page}
+    if season is not None:
+        params["episode"] = f"S{season:02d}"
+
     async with httpx.AsyncClient() as client:
-        response = await client.get(f"{RICK_MORTY_API}/episode", params={"page": page})
+        response = await client.get(f"{RICK_MORTY_API}/episode", params=params)
 
     if response.status_code != 200:
         raise HTTPException(
