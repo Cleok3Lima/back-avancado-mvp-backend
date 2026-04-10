@@ -89,17 +89,17 @@ docker run -p 8000:8000 rickmorty-api
 | Método | Rota              | Descrição                                            |
 |--------|-------------------|------------------------------------------------------|
 | `GET`  | `/`               | Health check — verifica se a API está no ar          |
-| `GET`  | `/episodios`      | Lista episódios paginados da API do Rick and Morty   |
+| `GET`  | `/episodios`      | Lista episódios paginados; aceita `?season=1..5` para filtrar por temporada  |
 | `GET`  | `/episodios/{id}` | Retorna detalhes do episódio + personagens completos |
 
 ### Parâmetros de query em `GET /diario`
 
-| Parâmetro   | Tipo    | Padrão       | Descrição                                         |
-|-------------|---------|--------------|---------------------------------------------------|
-| `page`      | int     | `1`          | Página atual                                      |
-| `limit`     | int     | `10`         | Itens por página (máx. 100)                       |
-| `avaliacao` | int     | *(opcional)* | Filtrar entradas por avaliação (1 a 5)            |
-| `order_by`  | string  | `created_at` | Ordenar por `created_at` ou `avaliacao`           |
+| Parâmetro   | Tipo    | Padrão              | Descrição                                                                                     |
+|-------------|---------|---------------------|-----------------------------------------------------------------------------------------------|
+| `page`      | int     | `1`                 | Página atual                                                                                  |
+| `limit`     | int     | `10`                | Itens por página (máx. 100)                                                                   |
+| `avaliacao` | int     | *(opcional)*        | Filtrar entradas por avaliação (1 a 5)                                                        |
+| `order_by`  | string  | `created_at_desc`   | `created_at_desc`, `created_at_asc`, `avaliacao_desc` ou `avaliacao_asc`                      |
 
 ---
 
