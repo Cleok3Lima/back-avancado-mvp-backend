@@ -1,17 +1,11 @@
-# main.py
-# Ponto de entrada da aplicação FastAPI
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from database import engine, Base
 from routers import diario, episodios, auth
 
-# Cria todas as tabelas no banco de dados (se ainda não existirem)
-# Isso executa ao iniciar o servidor pela primeira vez
 Base.metadata.create_all(bind=engine)
 
-# Instância principal da aplicação FastAPI
 app = FastAPI(
     title="Diário de Episódios — Rick & Morty API",
     description=(
@@ -22,17 +16,15 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Configuração do CORS — permite que o frontend React acesse a API
-# Em produção, substitua allow_origins por uma lista específica de domínios
+# Em produção, substitua allow_origins=["*"] por uma lista específica de domínios
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],        # Permite qualquer origem (ideal para desenvolvimento)
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],        # Permite todos os métodos HTTP (GET, POST, PUT, DELETE...)
-    allow_headers=["*"],        # Permite todos os cabeçalhos
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-# Registra os roteadores com seus respectivos prefixos
 app.include_router(auth.router)
 app.include_router(diario.router)
 app.include_router(episodios.router)

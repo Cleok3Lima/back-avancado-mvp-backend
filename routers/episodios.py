@@ -1,10 +1,6 @@
-# routers/episodios.py
-# Rotas que consomem a API pública do Rick and Morty (https://rickandmortyapi.com)
-
 import httpx
 from fastapi import APIRouter, HTTPException, Query
 
-# URL base da API externa
 RICK_MORTY_API = "https://rickandmortyapi.com/api"
 
 router = APIRouter(
@@ -45,7 +41,6 @@ async def buscar_episodio(episode_id: int):
     de todos os personagens que aparecem nele (resolvendo as URLs da API).
     """
     async with httpx.AsyncClient() as client:
-        # Busca o episódio pelo ID
         ep_response = await client.get(f"{RICK_MORTY_API}/episode/{episode_id}")
 
         if ep_response.status_code == 404:

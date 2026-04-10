@@ -1,6 +1,3 @@
-# routers/diario.py
-# Rotas CRUD para o diário pessoal de episódios — escopo por usuário autenticado
-
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session

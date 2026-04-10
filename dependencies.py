@@ -1,6 +1,3 @@
-# dependencies.py
-# Dependências reutilizáveis do FastAPI — em especial a autenticação via JWT
-
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 

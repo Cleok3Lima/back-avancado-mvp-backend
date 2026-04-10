@@ -1,6 +1,3 @@
-# security.py
-# Utilitários de criptografia: hash de senha, geração e decodificação de JWT
-
 import os
 from datetime import datetime, timedelta
 
@@ -14,7 +11,6 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-production")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 horas
 
-# Esquema OAuth2 — aponta para o endpoint de login
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 

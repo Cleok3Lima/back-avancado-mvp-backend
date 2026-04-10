@@ -1,6 +1,3 @@
-# schemas.py
-# Schemas Pydantic para validação de dados nas requisições e respostas da API
-
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, EmailStr, Field
@@ -34,7 +31,6 @@ class DiarioEntryOut(BaseModel):
     updated_at: datetime
 
     class Config:
-        # Permite que o Pydantic leia dados diretamente de objetos ORM do SQLAlchemy
         from_attributes = True
 
 
