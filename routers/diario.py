@@ -4,7 +4,7 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import desc
+from sqlalchemy import asc, desc
 
 from database import get_db
 from models import DiarioEntry, User
@@ -22,7 +22,7 @@ def listar_entradas(
     page: int = Query(1, ge=1, description="Número da página"),
     limit: int = Query(10, ge=1, le=100, description="Quantidade de itens por página"),
     avaliacao: Optional[int] = Query(None, ge=1, le=5, description="Filtrar por avaliação (1-5)"),
-    order_by: Optional[str] = Query("created_at", description="Campo para ordenar: 'created_at' ou 'avaliacao'"),
+    order_by: Optional[str] = Query("created_at_desc", description="Ordenação: 'created_at_desc', 'created_at_asc', 'avaliacao_desc', 'avaliacao_asc'"),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -35,10 +35,13 @@ def listar_entradas(
     if avaliacao is not None:
         query = query.filter(DiarioEntry.avaliacao == avaliacao)
 
-    if order_by == "avaliacao":
-        query = query.order_by(desc(DiarioEntry.avaliacao))
-    else:
-        query = query.order_by(desc(DiarioEntry.created_at))
+    ordering = {
+        "created_at_desc": desc(DiarioEntry.created_at),
+        "created_at_asc":  asc(DiarioEntry.created_at),
+        "avaliacao_desc":  desc(DiarioEntry.avaliacao),
+        "avaliacao_asc":   asc(DiarioEntry.avaliacao),
+    }
+    query = query.order_by(ordering.get(order_by, desc(DiarioEntry.created_at)))
 
     offset = (page - 1) * limit
     entradas = query.offset(offset).limit(limit).all()
